@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Formato | Discografía</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="{% static 'myapp/img/Logo.png' %}" class="img">
+            <p>Discografía</p>
+        </div>
+        <nav>
+            <a href="index_1">Inicio</a>
+            <a href="grabaciones">Grabaciones</a>
+            <a href="interpretes">Intérpretes</a>
+            <a href="companias">Companías</a>
+            <a href="formatos" class="activo">Formatos</a>
+        </nav>
+    </header>
+
+    <section class="listado">
+        <h1>Nuevo Formato</h1>
+
+        <form method="POST" class="form-tarea">
+            {% csrf_token %}
+
+            <label for="tipo">Tipo</label>
+            <input type="text" id="tipo" name="tipo" placeholder="Ej: CD, Vinilo, Digital">
+
+            <label for="conservacion">Conservación</label>
+            <input type="text" id="conservacion" name="conservacion" placeholder="Ej: Nuevo, Usado">
+
+            <label for="titulo">Grabación</label>
+            <select id="titulo" name="titulo">
+                <option value="">-- Seleccionar --</option>
+                {% for grabacion in grabaciones %}
+                    <option value="{{ grabacion.titulo }}">{{ grabacion.titulo }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn-principal">Guardar formato</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>Discografía - Don Pepe Muelas</p>
+    </footer>
+
+</body>
+</html>
