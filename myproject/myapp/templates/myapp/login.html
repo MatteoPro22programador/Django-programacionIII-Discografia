@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | Discografía</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="{% static 'myapp/img/Logo.png' %}" class="img">
+            <p>Discografía</p>
+        </div>
+    </header>
+
+    <section class="listado">
+        <h1>Iniciar sesión</h1>
+
+        {% if error %}
+            <p style="color:#d9384a; font-weight:600;">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" class="form-tarea">
+            {% csrf_token %}
+
+            <label for="username">Usuario</label>
+            <input type="text" id="username" name="username" required autofocus>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="btn-principal">Ingresar</button>
+        </form>
+
+        <p style="margin-top:16px; color:#8677a1; font-size:0.85rem;">
+            Las cuentas son creadas únicamente por el administrador. No hay registro público.
+        </p>
+    </section>
+
+    <footer>
+        <p>Discografía - Don Pepe Muelas</p>
+    </footer>
+
+</body>
+</html>

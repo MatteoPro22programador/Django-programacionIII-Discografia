@@ -1,7 +1,9 @@
 import os
+from functools import wraps
 from django.db import connection
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.contrib.auth.hashers import check_password
 
 
 def dictfetchall(cursor):
@@ -11,6 +13,45 @@ def dictfetchall(cursor):
     return [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
 
 
+def login_requerido(vista):
+    @wraps(vista)
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get("usuario_id"):
+            return redirect("login")
+        return vista(request, *args, **kwargs)
+    return wrapper
+
+
+def login_view(request):
+    error = None
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT id_usuario, username, password, nombre FROM usuarios WHERE username = %s",
+                [username]
+            )
+            fila = cursor.fetchone()
+
+        if fila and check_password(password, fila[2]):
+            request.session["usuario_id"] = fila[0]
+            request.session["usuario_nombre"] = fila[3]
+            return redirect("index")
+        else:
+            error = "Usuario o contraseña incorrectos"
+
+    return render(request, "myapp/login.html", {"error": error})
+
+
+def logout_view(request):
+    request.session.flush()
+    return redirect("login")
+
+
+@login_requerido
 def index(request):
     return render(request, "myapp/index_1.html")
 
@@ -19,6 +60,7 @@ def index(request):
 # GRABACIONES
 
 
+@login_requerido
 def grabaciones(request):
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -34,6 +76,7 @@ def grabaciones(request):
     return render(request, "myapp/grabaciones.html", {"grabaciones": lista})
 
 
+@login_requerido
 def crear_grabacion(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT id_compania, nombre FROM compania")
@@ -80,6 +123,7 @@ def crear_grabacion(request):
 # INTERPRETES
 
 
+@login_requerido
 def interpretes(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT id_interprete, nombre, descripcion FROM interprete")
@@ -88,6 +132,7 @@ def interpretes(request):
     return render(request, "myapp/interpretes.html", {"interpretes": lista})
 
 
+@login_requerido
 def crear_interprete(request):
     if request.method == "POST":
         nombre = request.POST.get("nombre")
@@ -108,6 +153,7 @@ def crear_interprete(request):
 # COMPAÑÍAS
 
 
+@login_requerido
 def companias(request):
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -122,6 +168,7 @@ def companias(request):
     return render(request, "myapp/companias.html", {"companias": lista})
 
 
+@login_requerido
 def crear_compania(request):
     if request.method == "POST":
         nombre = request.POST.get("nombre")
@@ -141,6 +188,7 @@ def crear_compania(request):
 
 # FORMATOS
 
+@login_requerido
 def formatos(request):
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -154,6 +202,7 @@ def formatos(request):
     return render(request, "myapp/formatos.html", {"formatos": lista})
 
 
+@login_requerido
 def crear_formato(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT titulo FROM grabaciones")
