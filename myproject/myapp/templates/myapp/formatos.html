@@ -24,7 +24,10 @@
             <a href="grabaciones">Grabaciones</a>
             <a href="interpretes">Intérpretes</a>
             <a href="companias">Companías</a>
-            <a href="formatos">Formatos</a>
+            <a href="formatos" class="activo">Formatos</a>
+            {% if request.session.nivel == 'ADMIN' %}
+            <a href="usuarios">Usuarios</a>
+            {% endif %}
             <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
         </nav>
         
@@ -34,8 +37,18 @@
 
         <div class="listado-header">
             <h1>Formatos de Almacenamiento</h1>
+            {% if request.session.nivel == 'ADMIN' %}
             <a href="{% url 'crear_formato' %}" class="btn-agregar">+ Nuevo Formato</a>
+            {% endif %}
         </div>
+
+        <form method="get" class="buscador">
+            <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Buscar por tipo, conservación o grabación...">
+            <button type="submit" class="btn-buscar">Buscar</button>
+            {% if q %}
+            <a href="{% url 'formatos' %}" class="btn-limpiar">Limpiar</a>
+            {% endif %}
+        </form>
 
         <div class="tabla-contenedor">
             <table>
@@ -44,7 +57,9 @@
                         <th>Tipo</th>
                         <th>Conservación</th>
                         <th>Grabación</th>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <th>Acciones</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -53,14 +68,22 @@
                         <td>{{ formato.tipo|default:"—" }}</td>
                         <td>{{ formato.conservacion|default:"—" }}</td>
                         <td>{{ formato.grabacion_titulo|default:"—" }}</td>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <td class="acciones">
-                            <a href="#" class="btn-editar">Editar</a>
-                            <a href="#" class="btn-eliminar">Eliminar</a>
+                            <a href="{% url 'editar_formato' formato.id_formato %}" class="btn-editar">Editar</a>
+                            <form method="post" action="{% url 'eliminar_formato' formato.id_formato %}" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que querés eliminar este formato?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-eliminar">Eliminar</button>
+                            </form>
                         </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="vacio">No hay formatos registrados.</td>
+                        <td colspan="{% if request.session.nivel == 'ADMIN' %}4{% else %}3{% endif %}" class="vacio">
+                            {% if q %}No se encontraron resultados para "{{ q }}".{% else %}No hay formatos registrados.{% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

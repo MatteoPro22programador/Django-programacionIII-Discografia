@@ -21,10 +21,13 @@
 
         <nav>
             <a href="index_1">Inicio</a>
-            <a href="grabaciones">Grabaciones</a>
+            <a href="grabaciones" class="activo">Grabaciones</a>
             <a href="interpretes">Intérpretes</a>
             <a href="companias">Companías</a>
             <a href="formatos">Formatos</a>
+            {% if request.session.nivel == 'ADMIN' %}
+            <a href="usuarios">Usuarios</a>
+            {% endif %}
             <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
         </nav>
         
@@ -34,8 +37,18 @@
 
         <div class="listado-header">
             <h1>Grabaciones</h1>
+            {% if request.session.nivel == 'ADMIN' %}
             <a href="{% url 'crear_grabacion' %}" class="btn-agregar">+ Nueva Grabación</a>
+            {% endif %}
         </div>
+
+        <form method="get" class="buscador">
+            <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Buscar por título, categoría, intérprete, compañía...">
+            <button type="submit" class="btn-buscar">Buscar</button>
+            {% if q %}
+            <a href="{% url 'grabaciones' %}" class="btn-limpiar">Limpiar</a>
+            {% endif %}
+        </form>
 
         <div class="tabla-contenedor">
             <table>
@@ -46,7 +59,9 @@
                         <th>Compañía</th>
                         <th>Año</th>
                         <th>Archivo</th>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <th>Acciones</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -63,14 +78,22 @@
                                 —
                             {% endif %}
                         </td>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <td class="acciones">
-                            <a href="#" class="btn-editar">Editar</a>
-                            <a href="#" class="btn-eliminar">Eliminar</a>
+                            <a href="{% url 'editar_grabacion' grabacion.titulo %}" class="btn-editar">Editar</a>
+                            <form method="post" action="{% url 'eliminar_grabacion' grabacion.titulo %}" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que querés eliminar la grabación \"{{ grabacion.titulo }}\"?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-eliminar">Eliminar</button>
+                            </form>
                         </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="vacio">No hay grabaciones registradas.</td>
+                        <td colspan="{% if request.session.nivel == 'ADMIN' %}6{% else %}5{% endif %}" class="vacio">
+                            {% if q %}No se encontraron resultados para "{{ q }}".{% else %}No hay grabaciones registradas.{% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

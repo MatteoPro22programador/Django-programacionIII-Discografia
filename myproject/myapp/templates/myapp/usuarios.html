@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios | Discografía</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="{% static 'myapp/img/Logo.png' %}" class="img">
+            <p>Discografía</p>
+        </div>
+
+        <nav>
+            <a href="index_1">Inicio</a>
+            <a href="grabaciones">Grabaciones</a>
+            <a href="interpretes">Intérpretes</a>
+            <a href="companias">Companías</a>
+            <a href="formatos">Formatos</a>
+            <a href="usuarios" class="activo">Usuarios</a>
+            <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
+        </nav>
+        
+    </header>
+
+    <section class="listado">
+
+        <div class="listado-header">
+            <h1>Usuarios</h1>
+            <a href="{% url 'crear_usuario' %}" class="btn-agregar">+ Nuevo Usuario</a>
+        </div>
+
+        <form method="get" class="buscador">
+            <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Buscar por username, nombre o nivel...">
+            <button type="submit" class="btn-buscar">Buscar</button>
+            {% if q %}
+            <a href="{% url 'usuarios' %}" class="btn-limpiar">Limpiar</a>
+            {% endif %}
+        </form>
+
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Nombre</th>
+                        <th>Nivel</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.id_usuario }}</td>
+                        <td>{{ usuario.username }}</td>
+                        <td>{{ usuario.nombre }}</td>
+                        <td>
+                            <span class="nivel nivel-{{ usuario.nivel|lower }}">{{ usuario.nivel }}</span>
+                        </td>
+                        <td class="acciones">
+                            <a href="{% url 'editar_usuario' usuario.id_usuario %}" class="btn-editar">Editar</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="vacio">
+                            {% if q %}No se encontraron resultados para "{{ q }}".{% else %}No hay usuarios registrados.{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <footer>
+        <p>Discografía - Don Pepe Muelas</p>
+    </footer>
+
+</body>
+
+</html>

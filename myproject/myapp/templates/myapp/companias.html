@@ -23,9 +23,12 @@
             <a href="index_1">Inicio</a>
             <a href="grabaciones">Grabaciones</a>
             <a href="interpretes">Intérpretes</a>
-            <a href="companias">Companías</a>
+            <a href="companias" class="activo">Companías</a>
             <a href="formatos">Formatos</a>
-        <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
+            {% if request.session.nivel == 'ADMIN' %}
+            <a href="usuarios">Usuarios</a>
+            {% endif %}
+            <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
         </nav>
         
     </header>
@@ -34,8 +37,18 @@
 
         <div class="listado-header">
             <h1>Compañías Discográficas</h1>
+            {% if request.session.nivel == 'ADMIN' %}
             <a href="{% url 'crear_compania' %}" class="btn-agregar">+ Nueva Compañía</a>
+            {% endif %}
         </div>
+
+        <form method="get" class="buscador">
+            <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Buscar por nombre o dirección...">
+            <button type="submit" class="btn-buscar">Buscar</button>
+            {% if q %}
+            <a href="{% url 'companias' %}" class="btn-limpiar">Limpiar</a>
+            {% endif %}
+        </form>
 
         <div class="tabla-contenedor">
             <table>
@@ -44,7 +57,9 @@
                         <th>Nombre</th>
                         <th>Dirección</th>
                         <th>Grabaciones</th>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <th>Acciones</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -53,14 +68,22 @@
                         <td>{{ compania.nombre }}</td>
                         <td>{{ compania.direccion|default:"—" }}</td>
                         <td>{{ compania.total_grabaciones }}</td>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <td class="acciones">
-                            <a href="#" class="btn-editar">Editar</a>
-                            <a href="#" class="btn-eliminar">Eliminar</a>
+                            <a href="{% url 'editar_compania' compania.id_compania %}" class="btn-editar">Editar</a>
+                            <form method="post" action="{% url 'eliminar_compania' compania.id_compania %}" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que querés eliminar la compañía \"{{ compania.nombre }}\"?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-eliminar">Eliminar</button>
+                            </form>
                         </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="vacio">No hay compañías registradas.</td>
+                        <td colspan="{% if request.session.nivel == 'ADMIN' %}4{% else %}3{% endif %}" class="vacio">
+                            {% if q %}No se encontraron resultados para "{{ q }}".{% else %}No hay compañías registradas.{% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

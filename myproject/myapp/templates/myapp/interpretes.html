@@ -20,11 +20,14 @@
         </div>
 
         <nav>
-<a href="index_1">Inicio</a>
+            <a href="index_1">Inicio</a>
             <a href="grabaciones">Grabaciones</a>
-            <a href="interpretes">Intérpretes</a>
+            <a href="interpretes" class="activo">Intérpretes</a>
             <a href="companias">Companías</a>
             <a href="formatos">Formatos</a>
+            {% if request.session.nivel == 'ADMIN' %}
+            <a href="usuarios">Usuarios</a>
+            {% endif %}
             <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
         </nav>
     
@@ -34,8 +37,18 @@
 
         <div class="listado-header">
             <h1>Intérpretes</h1>
+            {% if request.session.nivel == 'ADMIN' %}
             <a href="{% url 'crear_interprete' %}" class="btn-agregar">+ Nuevo Intérprete</a>
+            {% endif %}
         </div>
+
+        <form method="get" class="buscador">
+            <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Buscar por nombre o descripción...">
+            <button type="submit" class="btn-buscar">Buscar</button>
+            {% if q %}
+            <a href="{% url 'interpretes' %}" class="btn-limpiar">Limpiar</a>
+            {% endif %}
+        </form>
 
         <div class="tabla-contenedor">
             <table>
@@ -43,7 +56,9 @@
                     <tr>
                         <th>Nombre</th>
                         <th>Descripción</th>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <th>Acciones</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -51,14 +66,22 @@
                     <tr>
                         <td>{{ interprete.nombre }}</td>
                         <td>{{ interprete.descripcion|default:"—" }}</td>
+                        {% if request.session.nivel == 'ADMIN' %}
                         <td class="acciones">
-                            <a href="#" class="btn-editar">Editar</a>
-                            <a href="#" class="btn-eliminar">Eliminar</a>
+                            <a href="{% url 'editar_interprete' interprete.id_interprete %}" class="btn-editar">Editar</a>
+                            <form method="post" action="{% url 'eliminar_interprete' interprete.id_interprete %}" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que querés eliminar el intérprete \"{{ interprete.nombre }}\"?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-eliminar">Eliminar</button>
+                            </form>
                         </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="vacio">No hay intérpretes registrados.</td>
+                        <td colspan="{% if request.session.nivel == 'ADMIN' %}3{% else %}2{% endif %}" class="vacio">
+                            {% if q %}No se encontraron resultados para "{{ q }}".{% else %}No hay intérpretes registrados.{% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

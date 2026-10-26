@@ -23,6 +23,9 @@
             <a href="interpretes">Intérpretes</a>
             <a href="companias">Companías</a>
             <a href="formatos">Formatos</a>
+            {% if request.session.nivel == 'ADMIN' %}
+            <a href="usuarios">Usuarios</a>
+            {% endif %}
             <a href="{% url 'logout' %}" style="margin-left:auto; color:#d9384a;">Cerrar sesión</a>
         </nav>
         
